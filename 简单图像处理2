@@ -1,0 +1,69 @@
+# OpenCv
+
+## 复习
+
+由于一般的图像处理时，我们都需要对图像进行预处理，可以以复习的方式，完成图片的读取、展示、灰度图转化、二值化处理、模糊等操作。
+
+完成复习任务后，就可以获得满足今天教学内容的图片。
+
+## 边缘提取 轮廓提取 圆型检测
+
+```python
+import cv2
+from cv2 import *
+import numpy as np
+
+def show(p):
+    cv2.imshow('', p)
+    cv2.waitKey(0)
+
+img = imread('c.png')
+gray = cvtColor(img, COLOR_BGR2GRAY)
+gray = GaussianBlur(gray, (5, 5), 0, 0)
+r, b = threshold(gray, 170, 255, cv2.THRESH_BINARY_INV)
+
+contours, hierarchy = cv2.findContours(b, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+res = cv2.drawContours(img, contours, -1, (0, 0, 255), 2)
+
+circles = HoughCircles(gray, cv2.HOUGH_GRADIENT, 1, 10, param1=200, param2=40, minRadius=0, maxRadius=500)
+circles = np.uint16(np.around(circles))
+
+for i in circles[0, :]:
+    cv2.circle(img, (i[0], i[1]), i[2], (0, 255, 0), 2)
+    cv2.circle(img, (i[0], i[1]), 2, (0, 0, 255), 3)
+
+edges = cv2.Canny(gray,100,200)
+
+show(res)
+show(img)
+show(edges)
+```
+
+在这里需要为同学们介绍，轮廓提取的函数参数，分别为原图片、轮廓储存的数据结构、轮廓点的存储方法。
+返回的参数由于版本不同可能数量不同，只要提取其中的轮廓信息就足够了。
+
+圆型检测的函数参数分别为 原图像、算法、距离阈值、分辨率参数、canny高阈值、圆型判断阈值、最小半径、最大半径。
+上文代码中的参数经过测试与提供给同学们的图片相性较好。
+
+边缘提取中分高低阈值，以筛选边缘。
+
+## 摄像头读取
+
+```python
+cam = cv2.VideoCapture(0)
+while True:
+    ret, img = cam.read()
+    gray = cvtColor(img, COLOR_BGR2GRAY)
+    gray = GaussianBlur(gray, (9, 9), 0, 0)
+    r, b = threshold(gray, 100, 255, cv2.THRESH_BINARY_INV)
+    contours, hierarchy = cv2.findContours(b, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)
+    draw_img = gray.copy()
+    res = cv2.drawContours(draw_img, contours, -1, (0, 0, 255), 2)
+    imshow('', res)
+    if waitKey(1) == 27:
+        break
+```
+
+通过获取摄像机，并逐帧读取摄像机图像，请同学们完成对摄像机读入图像的轮廓和边缘进行提取的任务。其中`cam = cv2.VideoCapture(0)`表示获取计算机内的第一个摄像头，`ret, img = cam.read()`表示读取当前摄像头获取到的图像。
+
+上述内容需要约1-2课时完成教学和学生实践。
